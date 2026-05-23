@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus AI | Integrated Medical Platform</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'Prompt', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+              400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+              800: '#1e40af', 900: '#1e3a8a', 950: '#172554'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', 'Prompt', sans-serif; background-color: #f8fafc; color: #0f172a; transition: background-color 0.3s, color 0.3s; }
+    .dark body { background-color: #0b0f19; color: #f1f5f9; }
+    .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); }
+    .dark .glass { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(37, 99, 235, 0.15); }
+    .sidebar-link.active { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3); }
+    .sidebar-link.active i { color: white !important; }
+    .spinner { border: 3px solid rgba(37, 99, 235, 0.1); width: 28px; height: 28px; border-radius: 50%; border-left-color: #2563eb; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .pill { transition: all 0.2s ease; }
+    .pill:hover { transform: translateY(-1px); }
+  </style>
+</head>
+<body class="antialiased min-h-screen flex">
+
+  <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-colors duration-300 z-10">
+    <div class="p-6">
+      <div class="flex items-center gap-3 px-2 mb-8">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-600 flex items-center justify-center shadow-md shadow-brand-500/20">
+          <i class="fa-solid fa-notes-medical text-white text-lg animate-pulse"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-500 dark:from-brand-400 dark:to-indigo-300">Nexus AI</h1>
+          <p class="text-xs text-slate-400 font-medium">Integrated Platform</p>
+        </div>
+      </div>
+
+      <nav class="space-y-1">
+        <button data-tab="dashboard" class="sidebar-link active w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition duration-200">
+          <i class="fa-solid fa-chart-pie text-slate-400 dark:text-slate-500 text-base w-5"></i> Dashboard
+        </button>
+        <button data-tab="analysis" class="sidebar-link w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition duration-200">
+          <i class="fa-solid fa-microscope text-slate-400 dark:text-slate-500 text-base w-5"></i> AI X-ray / Blood
+        </button>
+        <button data-tab="chat" class="sidebar-link w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition duration-200">
+          <i class="fa-solid fa-comment-medical text-slate-400 dark:text-slate-500 text-base w-5"></i> Medical Copilot
+        </button>
+        <button data-tab="search" class="sidebar-link w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition duration-200">
+          <i class="fa-solid fa-hospital-user text-slate-400 dark:text-slate-500 text-base w-5"></i> Patient Search
+        </button>
+        <button data-tab="emr" class="sidebar-link w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition duration-200">
+          <i class="fa-solid fa-address-card text-slate-400 dark:text-slate-500 text-base w-5"></i> EMR System
+        </button>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
+      <div class="flex items-center justify-between p-2 mb-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/40">
+        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 pl-2">Dark Mode</span>
+        <button id="themeToggle" class="w-10 h-6 bg-slate-200 dark:bg-brand-600 rounded-full p-0.5 transition relative flex items-center">
+          <div class="w-5 h-5 bg-white rounded-full shadow transition-transform transform dark:translate-x-4 flex items-center justify-center text-[10px]">
+            <i class="fa-solid fa-sun text-amber-500 dark:hidden"></i>
+            <i class="fa-solid fa-moon text-brand-600 hidden dark:block"></i>
+          </div>
+        </button>
+      </div>
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-100 to-brand-200 dark:from-slate-800 dark:to-slate-700 border-2 border-white dark:border-slate-800 overflow-hidden shrink-0 flex items-center justify-center">
+          <i class="fa-solid fa-user-doctor text-brand-600 dark:text-brand-400"></i>
+        </div>
+        <div class="overflow-hidden">
+          <p class="text-sm font-bold truncate">Dr. Nexus Assistant</p>
+          <p class="text-[11px] text-slate-400 font-medium truncate">Medical Staff Account</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+    
+    <header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-8 flex items-center justify-between shrink-0 transition-colors duration-300 z-10">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Backend:</span>
+          <span id="backendStatus" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 pill">🟡 Checking...</span>
+        </div>
+        <div class="w-px h-4 bg-slate-200 dark:bg-slate-700"></div>
+        <div class="flex items-center gap-2 text-xs font-medium text-slate-400">
+          <span class="font-bold text-slate-400 uppercase tracking-wider">Session:</span>
+          <span id="sessionView" class="font-mono text-slate-600 dark:text-slate-300">-</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="refreshAllBtn" class="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-rotate text-slate-400"></i> Refresh Data
+        </button>
+      </div>
+    </header>
+
+    <div id="tabContentContainer" class="flex-1 overflow-y-auto p-8 relative">
+
+      <section id="tab-dashboard" class="tab-pane space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-extrabold tracking-tight">System Dashboard</h2>
+            <p class="text-sm text-slate-500">ภาพรวมข้อมูลการวิเคราะห์และสถิติการใช้งานแพลตฟอร์มทางการแพทย์</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="glass p-6 rounded-3xl flex items-center gap-5 shadow-sm shadow-slate-100/50">
+            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-hospital-user"></i></div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">ผู้ป่วยในระบบ</p>
+              <h3 class="text-2xl font-bold mt-0.5">50,000+</h3>
+              <p class="text-xs text-slate-400 mt-1">อ้างอิงจาก Dataset ระบบหลัก</p>
+            </div>
+          </div>
+          <div class="glass p-6 rounded-3xl flex items-center gap-5 shadow-sm shadow-slate-100/50">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">การตรวจด้วย AI</p>
+              <h3 class="text-2xl font-bold mt-0.5">YOLO v8</h3>
+              <p class="text-xs text-slate-400 mt-1">โมเดลแยกประเภท X-ray & Blood</p>
+            </div>
+          </div>
+          <div class="glass p-6 rounded-3xl flex items-center gap-5 shadow-sm shadow-slate-100/50">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-brain"></i></div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Copilot Core</p>
+              <h3 class="text-2xl font-bold mt-0.5">Gemini API</h3>
+              <p class="text-xs text-slate-400 mt-1">ระบบวิเคราะห์ข้อมูลผ่านโมเดลภาษา</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 glass p-6 rounded-3xl shadow-sm">
+            <h4 class="font-bold text-sm text-slate-500 mb-4 uppercase tracking-wider">สถิติแนวโน้มการใช้งาน AI วิเคราะห์โรค</h4>
+            <div class="h-64"><canvas id="analyticsChart"></canvas></div>
+          </div>
+          <div class="glass p-6 rounded-3xl shadow-sm flex flex-col justify-between">
+            <div>
+              <h4 class="font-bold text-sm text-slate-500 mb-4 uppercase tracking-wider">การแจ้งเตือนฉุกเฉินล่าสุด</h4>
+              <div class="space-y-3">
+                <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/10 flex gap-3 items-start">
+                  <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm mt-0.5"></i>
+                  <div>
+                    <h5 class="text-xs font-bold text-rose-800 dark:text-rose-300">พบความเสี่ยงโรคปอดอักเสบ (Pneumonia)</h5>
+                    <p class="text-[11px] text-rose-600/80 dark:text-rose-400/80 mt-0.5 font-medium">ตรวจพบจากภาพ X-Ray เคสล่าสุด มั่นใจ 89%</p>
+                  </div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/10 flex gap-3 items-start">
+                  <i class="fa-solid fa-triangle-exclamation text-amber-500 text-sm mt-0.5"></i>
+                  <div>
+                    <h5 class="text-xs font-bold text-amber-800 dark:text-amber-300">ปริมาณเม็ดเลือดขาวต่ำกว่าปกติ</h5>
+                    <p class="text-[11px] text-amber-600/80 dark:text-amber-400/80 mt-0.5 font-medium">ผลการวิเคราะห์ภาพสเมียร์เลือดมีสิ่งผิดปกติ</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center">
+              <span class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-shield-halved mr-1"></i> มอนิเตอร์ระบบแบบเรียลไทม์สำเร็จ</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-analysis" class="tab-pane hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-extrabold tracking-tight">AI X-ray & Blood Detection</h2>
+          <p class="text-sm text-slate-500">ระบบคัดกรองอัจฉริยะ ค้นหารอยโรคในภาพถ่ายรังสี และตรวจนับจำนวนเซลล์ในภาพเม็ดเลือด</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+          <div class="lg:col-span-2 glass p-6 rounded-3xl shadow-sm space-y-4">
+            <h4 class="font-bold text-slate-700 dark:text-slate-300 text-sm border-b border-slate-100 dark:border-slate-800 pb-3">📁 ส่งรูปภาพตรวจวิเคราะห์</h4>
+            <form id="analysisForm" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ประเภทของภาพ</label>
+                <select id="analysisType" class="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800 text-sm font-medium focus:outline-none focus:border-brand-500 transition">
+                  <option value="xray">🩻 Chest X-ray (ตรวจปอด)</option>
+                  <option value="blood">🩸 Blood Smear Image (นับเม็ดเลือด)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">เลือกไฟล์ภาพ (JPEG / PNG)</label>
+                <div class="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-brand-500 transition cursor-pointer relative" onclick="document.getElementById('imageFile').click()">
+                  <input type="file" id="imageFile" accept="image/*" class="hidden" onchange="previewImageFile(this)" />
+                  <div id="uploadPreviewContainer" class="space-y-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-300 dark:text-slate-600"></i>
+                    <p class="text-xs text-slate-500 font-medium">คลิกเพื่อเลือกไฟล์รูปภาพทางการแพทย์</p>
+                  </div>
+                  <img id="imagePreview" class="hidden max-h-40 mx-auto rounded-xl object-contain shadow-sm" />
+                </div>
+              </div>
+
+              <button type="submit" class="w-full h-11 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm transition shadow-md shadow-brand-500/10 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> รันโมเดล AI ประมวลผล
+              </button>
+            </form>
+          </div>
+
+          <div class="lg:col-span-3 glass p-6 rounded-3xl shadow-sm min-h-[350px] flex flex-col justify-between relative overflow-hidden">
+            <h4 class="font-bold text-slate-700 dark:text-slate-300 text-sm border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
+              <span>🎯 รายงานผลลัพธ์จาก AI</span>
+              <span id="analysisLogs" class="text-xs text-slate-400 font-normal">ระบบพร้อมใช้งาน</span>
+            </h4>
+
+            <div id="analysisEmpty" class="my-auto text-center space-y-2">
+              <i class="fa-solid fa-folder-open text-4xl text-slate-200 dark:text-slate-700"></i>
+              <p class="text-sm text-slate-400 font-medium">ยังไม่มีข้อมูลการวิเคราะห์ กรุณาอัปโหลดไฟล์ด้านซ้าย</p>
+            </div>
+
+            <div id="analysisLoading" class="hidden my-auto text-center space-y-3">
+              <div class="spinner mx-auto"></div>
+              <p class="text-sm text-brand-600 font-semibold animate-pulse">กำลังประมวลผลผ่านโมเดล YOLO AI กรุณารอสักครู่...</p>
+            </div>
+
+            <div id="analysisResult" class="hidden my-auto space-y-4 pt-2">
+              <div class="flex flex-wrap gap-2">
+                <span id="typeBadge" class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-brand-100 text-brand-700">Modality: -</span>
+                <span id="confBadge" class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">Confidence: -</span>
+                <span id="reportId" class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 font-mono">ID: -</span>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ผลสรุปการวินิจฉัย (Finding)</h5>
+                <p id="findingText" class="text-base font-bold text-slate-800 dark:text-slate-100">-</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">รายละเอียดความน่าจะเป็นเพิ่มเติม (Details)</h5>
+                <pre id="detailsText" class="text-xs font-mono font-medium leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300"></pre>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-1">
+              <i class="fa-solid fa-shield-halved"></i> ผลลัพธ์นี้ได้รับการประมวลผลด้วยโมเดลคอมพิวเตอร์วิทัศน์เฉพาะทาง
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-chat" class="tab-pane hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-extrabold tracking-tight">Medical Copilot</h2>
+          <p class="text-sm text-slate-500">ห้องแชทปรึกษาเคสทางการแพทย์ แปลความหมายใบแล็บ หรือสรุปข้อมูลด้วยพลังแห่ง LLM Gemini API</p>
+        </div>
+
+        <div class="glass rounded-3xl shadow-sm flex flex-col h-[550px] overflow-hidden">
+          <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/40 dark:bg-slate-900/10">
+            <div class="flex gap-3 items-end max-w-[85%]">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <i class="fa-solid fa-robot text-xs"></i>
+              </div>
+              <div class="glass rounded-3xl rounded-bl-md px-5 py-3 text-sm leading-relaxed shadow-sm">
+                สวัสดีครับผมคือ **Medical Copilot AI** ยินดีต้อนรับครับ! คุณหมอสามารถพิมพ์ปรึกษาเคสผู้ป่วย สอบถามวิธีใช้ยา หรือให้ช่วยสรุปแปลผลห้องปฏิบัติการ (Lab Report) ได้เลยครับ 🩺
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+            <form id="chatForm" class="flex gap-2">
+              <input type="text" id="chatInput" placeholder="พิมพ์ข้อความคำถามทางการแพทย์ที่ต้องการสอบถามที่นี่..." autocomplete="off" class="flex-1 h-12 px-5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-brand-500 dark:focus:border-brand-500 transition" />
+              <button type="submit" class="w-12 h-12 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white flex items-center justify-center transition shadow-md shadow-brand-500/10 shrink-0">
+                <i class="fa-solid fa-paper-plane text-sm"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-search" class="tab-pane hidden space-y-6">
+        <div>
+          <h2 class="text-2xl font-extrabold tracking-tight">Patient Search</h2>
+          <p class="text-sm text-slate-500">ระบบสืบค้นข้อมูลประวัติผู้ป่วยในฐานข้อมูลหลักโรงพยาบาล (เชื่อมโยงฐานข้อมูลผ่าน CSV File)</p>
+        </div>
+
+        <div class="glass p-5 rounded-3xl shadow-sm">
+          <form id="searchForm" class="flex flex-col sm:flex-row gap-3">
+            <div class="w-full sm:w-48 shrink-0">
+              <select id="searchType" class="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold focus:outline-none focus:border-brand-500 transition">
+                <option value="name">🔍 ค้นหาจาก ชื่อ-นามสกุล</option>
+                <option value="condition">📋 ค้นหาจาก กลุ่มโรคหลัก</option>
+                <option value="blood_type">🩸 ค้นหาจาก กรุ๊ปเลือด</option>
+              </select>
+            </div>
+            <div class="flex-1 relative">
+              <input type="text" id="searchInput" placeholder="กรอกคำค้นหา เช่นชื่อผู้ป่วย, อาการ, หรือกรุ๊ปเลือด (เช่น AB)..." class="w-full h-11 pl-5 pr-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-brand-500 transition" />
+              <button type="submit" class="absolute right-2 top-1.5 h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 transition text-xs font-bold text-slate-600 dark:text-slate-300">
+                ค้นหา
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="glass rounded-3xl shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800 text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                  <th class="py-4 px-5 text-center w-16">ลำดับ</th>
+                  <th class="py-4 px-5">ชื่อผู้ป่วย</th>
+                  <th class="py-4 px-5">อายุ / เพศ</th>
+                  <th class="py-4 px-5">อาการสำคัญ (Medical Condition)</th>
+                  <th class="py-4 px-5">วันที่เข้ารักษา (Admission Date)</th>
+                  <th class="py-4 px-5 text-center w-36">การปฏิบัติการ</th>
+                </tr>
+              </thead>
+              <tbody id="patientTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                <tr>
+                  <td colspan="6" class="py-14 text-center text-slate-400">
+                    <i class="fa-solid fa-users text-3xl text-slate-200 dark:text-slate-700 mb-2 block"></i>
+                    กรุณากรอกคำค้นหาด้านบน เพื่อสืบค้นข้อมูลประวัติผู้ป่วยใน Dataset
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-emr" class="tab-pane hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-extrabold tracking-tight">Electronic Medical Records (EMR)</h2>
+            <p class="text-sm text-slate-500">ระบบจัดการเวชระเบียนอิเล็กทรอนิกส์และประวัติผู้ป่วยรายบุคคล</p>
+          </div>
+          <div class="w-64 shrink-0">
+            <select id="emrPatientSelect" class="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold text-brand-600 focus:outline-none">
+              <option value="">-- ยังไม่มีการเลือกผู้ป่วย --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div class="glass p-6 rounded-3xl shadow-sm space-y-5">
+            <div class="text-center pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div class="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-brand-500 mx-auto flex items-center justify-center text-3xl mb-3 text-slate-400">
+                <i class="fa-solid fa-hospital-user"></i>
+              </div>
+              <h3 id="emrPatientName" class="font-bold text-lg">กรุณาเลือกผู้ป่วยก่อน</h3>
+              <span id="emrStatus" class="inline-block mt-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500">No Active Profile</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-sm font-medium">
+              <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase">HN Number</p>
+                <p id="emrHN" class="text-slate-800 dark:text-slate-200 mt-0.5 font-mono">-</p>
+              </div>
+              <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase">กรุ๊ปเลือด</p>
+                <p id="emrBlood" class="text-slate-800 dark:text-slate-200 mt-0.5">-</p>
+              </div>
+              <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase">อายุ</p>
+                <p id="emrAge" class="text-slate-800 dark:text-slate-200 mt-0.5">-</p>
+              </div>
+              <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase">เพศ</p>
+                <p id="emrSex" class="text-slate-800 dark:text-slate-200 mt-0.5">-</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-2 space-y-6">
+            <div class="glass p-6 rounded-3xl shadow-sm space-y-4">
+              <h4 class="font-bold text-sm text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-3"><i class="fa-solid fa-notes-medical mr-1.5 text-brand-500"></i> บันทึกผลการตรวจรักษาและเวชระเบียน</h4>
+              
+              <div class="space-y-4">
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                  <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">กลุ่มรอยโรค/อาการทางคลินิกประจำตัว</h5>
+                  <p id="emrConditionDisplay" class="text-sm font-bold text-slate-700 dark:text-slate-200">ไม่มีข้อมูลโปรไฟล์ผู้ป่วย</p>
+                </div>
+                
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                  <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">โรงพยาบาล/สถานที่เข้ารับการรักษา</h5>
+                  <p id="emrHospitalDisplay" class="text-sm font-semibold text-slate-600 dark:text-slate-300">-</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">แพทย์ผู้ดูแล (Doctor)</h5>
+                    <p id="emrDoctorDisplay" class="text-sm font-medium text-slate-600 dark:text-slate-300">-</p>
+                  </div>
+                  <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ค่ายา/ค่ารักษา (Billing Amount)</h5>
+                    <p id="emrBillingDisplay" class="text-sm font-mono font-bold text-slate-700 dark:text-slate-200">-</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <script>
+    // ---------------------------------------------------------
+    // 1. GLOBAL STATE & CONFIGURATIONS
+    // ---------------------------------------------------------
+    const BACKEND_URL = "http://localhost:8000";
+    
+    // สร้างหรือเรียกใช้ Unique Chat Session เพื่อคุยกับบอทแบบจำจำประโยคได้
+    let chatSessionId = localStorage.getItem('nexus_session_id') || 'sess_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('nexus_session_id', chatSessionId);
+    document.getElementById('sessionView').textContent = chatSessionId;
+
+    // ---------------------------------------------------------
+    // 2. TAB TOGGLE SYSTEM
+    // ---------------------------------------------------------
+    const tabs = document.querySelectorAll('[data-tab]');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tabPanes.forEach(p => p.classList.add('hidden'));
+
+        tab.classList.add('active');
+        const targetPane = document.getElementById(`tab-${tab.dataset.tab}`);
+        if (targetPane) targetPane.classList.remove('hidden');
+      });
+    });
+
+    // ---------------------------------------------------------
+    // 3. DARK / LIGHT THEME CONTROL
+    // ---------------------------------------------------------
+    const themeToggle = document.getElementById('themeToggle');
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    themeToggle.addEventListener('click', () => {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    // ---------------------------------------------------------
+    // 4. TOAST NOTIFICATION UTILITY
+    // ---------------------------------------------------------
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `px-5 py-3.5 rounded-2xl shadow-xl text-xs font-bold text-white flex items-center gap-2 pointer-events-auto transition duration-300 transform translate-y-4 opacity-0`;
+      
+      let bgStyle = 'bg-slate-800';
+      let icon = '<i class="fa-solid fa-circle-info"></i>';
+      if (type === 'success') { bgStyle = 'bg-emerald-600 shadow-emerald-500/10'; icon = '<i class="fa-solid fa-circle-check"></i>'; }
+      if (type === 'error') { bgStyle = 'bg-rose-600 shadow-rose-500/10'; icon = '<i class="fa-solid fa-circle-exclamation"></i>'; }
+      if (type === 'info') { bgStyle = 'bg-brand-600 shadow-brand-500/10'; icon = '<i class="fa-solid fa-circle-info"></i>'; }
+
+      toast.className = `${toast.className} ${bgStyle}`;
+      toast.innerHTML = `${icon} <span>${message}</span>`;
+      
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.remove('translate-y-4', 'opacity-0'); }, 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => { toast.remove(); }, 300);
+      }, 3500);
+    }
+
+    // ---------------------------------------------------------
+    // 5. BACKEND API HEALTH CHECK
+    // ---------------------------------------------------------
+    async function checkBackendHealth() {
+      const label = document.getElementById('backendStatus');
+      try {
+        const res = await fetch(`${BACKEND_URL}/`);
+        if (res.ok) {
+          label.textContent = "🟢 Connected";
+          label.className = "px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 pill";
+        } else {
+          throw new Error();
+        }
+      } catch (err) {
+        label.textContent = "🔴 Disconnected";
+        label.className = "px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 pill";
+        showToast("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์หลังบ้านได้ (FastAPI)", "error");
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 6. AI DETECTION ACTION (FILE UPLOAD & PREVIEW)
+    // ---------------------------------------------------------
+    function previewImageFile(input) {
+      const file = input.files[0];
+      const preview = document.getElementById('imagePreview');
+      const container = document.getElementById('uploadPreviewContainer');
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.classList.remove('hidden');
+          container.classList.add('hidden');
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('imageFile');
+      const imgType = document.getElementById('analysisType').value;
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showToast("กรุณาเลือกไฟล์รูปภาพก่อนกดยิงรันโมเดลครับ", "error");
+        return;
+      }
+
+      // แสดง UI การโหลด
+      document.getElementById('analysisEmpty').classList.add('hidden');
+      document.getElementById('analysisResult').classList.add('hidden');
+      document.getElementById('analysisLoading').classList.remove('hidden');
+      document.getElementById('analysisLogs').textContent = "กำลังวิเคราะห์...";
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('image_type', imgType);
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/analyze`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        
+        document.getElementById('analysisLoading').classList.add('hidden');
+
+        if (data.success) {
+          document.getElementById('analysisResult').classList.remove('hidden');
+          document.getElementById('analysisLogs').textContent = "ประมวลผลเสร็จสิ้น";
+          
+          document.getElementById('typeBadge').textContent = `Modality: ${data.type.toUpperCase()}`;
+          document.getElementById('reportId').textContent = `Filename: ${data.filename}`;
+
+          if (data.type === 'xray') {
+            document.getElementById('confBadge').classList.remove('hidden');
+            document.getElementById('confBadge').textContent = `Confidence: ${data.confidence}`;
+            document.getElementById('findingText').textContent = data.result;
+            
+            let extra = "🩻 อัตราความน่าจะเป็นรอยโรคปอด:\n";
+            for (const [k, v] of Object.entries(data.all_predictions || {})) {
+              extra += `- ${k}: ${v}\n`;
+            }
+            document.getElementById('detailsText').textContent = extra;
+          } else {
+            // โหมดสเมียร์เลือด (Blood Smear Count)
+            document.getElementById('confBadge').classList.add('hidden');
+            document.getElementById('findingText').textContent = `นับเซลล์เม็ดเลือดได้รวมทั้งหมด ${data.total_cells} เซลล์`;
+            
+            let extra = "🩸 แจกแจงชนิดเซลล์เม็ดเลือดที่ส่องพบ:\n";
+            for (const [cell, count] of Object.entries(data.cell_counts || {})) {
+              extra += `- ชนิดเซลล์ [${cell}]: พบจำนวน ${count} ตัว\n`;
+            }
+            if(data.message) extra += `\n💡 หมายเหตุ: ${data.message}`;
+            document.getElementById('detailsText').textContent = extra;
+          }
+          showToast("AI วิเคราะห์ภาพถ่ายทางการแพทย์สำเร็จ", "success");
+        } else {
+          throw new Error(data.error || "เกิดข้อผิดพลาดด้านเครือข่าย");
+        }
+      } catch (err) {
+        document.getElementById('analysisLoading').classList.add('hidden');
+        document.getElementById('analysisEmpty').classList.remove('hidden');
+        document.getElementById('analysisLogs').textContent = "ล้มเหลว";
+        showToast(err.message, "error");
+      }
+    });
+
+    // ---------------------------------------------------------
+    // 7. MEDICAL COPILOT ACTION (CHATBOT SYSTEM)
+    // ---------------------------------------------------------
+    document.getElementById('chatForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const chatInput = document.getElementById('chatInput');
+      const text = chatInput.value.trim();
+      
+      if (!text) return;
+
+      // วาดแชทฝั่งผู้ใช้ลงจอ
+      appendChatBubble('user', text);
+      chatInput.value = "";
+
+      // สร้างฟองแชทรอคำตอบจาก AI บอท
+      const aiBubble = appendChatBubble('ai', "🤖 กำลังประมวลผลคำตอบจากฐานข้อมูลการแพทย์...");
+
+      const formData = new FormData();
+      formData.append('message', text);
+      formData.append('session_id', chatSessionId);
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/chat`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          aiBubble.querySelector('.msg-box').textContent = data.response;
+        } else {
+          throw new Error(data.error || "โมเดลขัดข้อง");
+        }
+      } catch (err) {
+        aiBubble.querySelector('.msg-box').textContent = `❌ ข้อผิดพลาด: ${err.message}`;
+      }
+    });
+
+    function appendChatBubble(sender, text) {
+      const chatMessages = document.getElementById('chatMessages');
+      const wrapper = document.createElement('div');
+      wrapper.className = sender === 'user' ? "flex gap-3 items-end max-w-[85%] ml-auto justify-end" : "flex gap-3 items-end max-w-[85%]";
+      
+      if (sender === 'user') {
+        wrapper.innerHTML = `<div class="bg-brand-600 text-white rounded-3xl rounded-br-md px-5 py-3 text-sm shadow-sm msg-box">${text}</div>`;
+      } else {
+        wrapper.innerHTML = `
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm"><i class="fa-solid fa-robot text-xs"></i></div>
+          <div class="glass rounded-3xl rounded-bl-md px-5 py-3 text-sm leading-relaxed shadow-sm msg-box">${text}</div>
+        `;
+      }
+      chatMessages.appendChild(wrapper);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return wrapper;
+    }
+
+    // ---------------------------------------------------------
+    // 8. PATIENT DATA SEARCH ACTION (DATABASE CSV LINK)
+    // ---------------------------------------------------------
+    document.getElementById('searchForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = document.getElementById('searchInput').value.trim();
+      const type = document.getElementById('searchType').value;
+      const tbody = document.getElementById('patientTableBody');
+
+      if (!q) {
+        showToast("กรุณากรอกข้อมูลสิ่งที่ต้องการค้นหา", "info");
+        return;
+      }
+
+      tbody.innerHTML = `<tr><td colspan="6" class="py-14 text-center"><div class="spinner mx-auto mb-2"></div> กำลังอ่านประวัติและกวาดดัชนีข้อมูลจากไฟล์ CSV...</td></tr>`;
+
+      const formData = new FormData();
+      formData.append('search_query', q);
+      formData.append('search_type', type);
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/patient/search`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          tbody.innerHTML = "";
+          if (data.results.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="py-14 text-center text-slate-400">❌ ไม่พบประวัติผู้ป่วยที่สอดคล้องกับคำค้นหาของคุณ</td></tr>`;
+            return;
+          }
+
+          data.results.forEach((p, index) => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition";
+            tr.innerHTML = `
+              <td class="py-4 px-5 text-center font-mono text-slate-400">${index + 1}</td>
+              <td class="py-4 px-5 font-bold text-slate-800 dark:text-slate-200">${p.Name || 'ไม่ระบุ'}</td>
+              <td class="py-4 px-5">${p.Age || '-'} ปี / ${p.Gender || '-'}</td>
+              <td class="py-4 px-5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">${p['Medical Condition'] || '-'}</span></td>
+              <td class="py-4 px-5 text-slate-500 text-xs">${p['Date of Admission'] || '-'}</td>
+              <td class="py-4 px-5 text-center">
+                <button onclick='loadIntoEMRSystem(${JSON.stringify(p).replace(/'/g, "&apos;")})' class="px-3 py-1.5 rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300 text-xs font-bold transition-all hover:scale-105">
+                  <i class="fa-solid fa-folder-open mr-1"></i> เลือกผู้ป่วย
+                </button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+          showToast(`ดึงข้อมูลเสร็จสิ้น พบรายการ ${data.total} เคส`, "success");
+        } else {
+          throw new Error(data.error);
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-14 text-center text-rose-500">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
+      }
+    });
+
+    // ฟังก์ชันเชื่อมโยงข้อมูลผู้ป่วยข้ามไปยังหน้า EMR System
+    window.loadIntoEMRSystem = function(patient) {
+      const select = document.getElementById('emrPatientSelect');
+      select.innerHTML = `<option value="${patient.Name}">${patient.Name} (HN-Active)</option>`;
+      
+      // อัปเดตข้อมูลบนบอร์ดเวชระเบียน
+      document.getElementById('emrPatientName').textContent = patient.Name;
+      document.getElementById('emrStatus').textContent = patient['Admission Type'] || "General";
+      document.getElementById('emrStatus').className = `inline-block mt-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${patient['Admission Type'] === 'Urgent' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`;
+      
+      // สุ่มเลข HN เพื่อความสมจริงในการทดสอบระบบของนักเรียน
+      document.getElementById('emrHN').textContent = "HN-" + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById('emrBlood').textContent = patient['Blood Type'] || "ไม่ทราบ";
+      document.getElementById('emrAge').textContent = `${patient.Age || '-'} ปี`;
+      document.getElementById('emrSex').textContent = patient.Gender || "-";
+      
+      document.getElementById('emrConditionDisplay').textContent = patient['Medical Condition'] || "ปกติ";
+      document.getElementById('emrHospitalDisplay').textContent = patient['Hospital'] || "ศูนย์การแพทย์ Nexus Central";
+      document.getElementById('emrDoctorDisplay').textContent = patient['Doctor'] || "แพทย์เวรประจำวัน";
+      document.getElementById('emrBillingDisplay').textContent = `$${parseFloat(patient['Billing Amount'] || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      showToast(`โหลดเวชระเบียนของ ${patient.Name} สำเร็จ`, "info");
+      
+      // สลับหน้าแท็บไปที่ EMR ทันทีเพื่อความลื่นไหล
+      document.querySelector('[data-tab="emr"]').click();
+    };
+
+    // ---------------------------------------------------------
+    // 9. DASHBOARD CHART GENERATION (CHART.JS)
+    // ---------------------------------------------------------
+    const ctx = document.getElementById('analyticsChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.'],
+        datasets: [{
+          label: 'ยอดการส่งตรวจสแกนรอยโรคสะสม (เคส)',
+          data: [1200, 1900, 3000, 4500, 5600],
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.05)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.35
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+      }
+    });
+
+    // ปุ่ม Refresh ดึงตรวจสอบสถานะใหม่
+    document.getElementById('refreshAllBtn').addEventListener('click', () => {
+      checkBackendHealth();
+      showToast("รีเฟรชการเชื่อมต่อเครือข่ายระบบสำเร็จ", "success");
+    });
+
+    // รันตรวจเช็คสุขภาพหลังบ้านครั้งแรกตอนเปิดหน้าเว็บขึ้นมา
+    checkBackendHealth();
+  </script>
+</body>
+</html>
